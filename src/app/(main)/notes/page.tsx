@@ -1,0 +1,87 @@
+import { Suspense } from "react"
+import { getUserWithProfile } from "@/lib/auth/server"
+import { getFilteredNotes, getUserLikedNoteIds, getTagCloud, userHasPosted } from "@/lib/notes/queries"
+import { prisma } from "@/lib/db/prisma"
+import { COURSES_DICT, SUBJECTS } from "@/lib/courses/loader"
+import { NoteFilters } from "@/components/notes/NoteFilters"
+import { NotesFeedClient } from "@/components/notes/NotesFeedClient"
+import NotesLoading from "./loading"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = { title: "Notes Feed" }
+export const dynamic = "force-dynamic"
+
+interface Props {
+  searchParams: Promise<Record<string, string>>
+}
+
+export default async function NotesPage({ searchParams }: Props) {
+  const params = await searchParams
+  const user = await getUserWithProfile()
+
+  const filters = {
+    class_filter: params.class_filter || "All",
+    search: params.search || "",
+    tag_filter: params.tag_filter || "All",
+    date_filter: params.date_filter || "All",
+    sort_by: params.sort_by || "recent",
+    page: 1,
+  }
+
+  const hasPosted = user ? await userHasPosted(user.id) : false
+
+  // Always fetch data (even for gated users — server renders it, gate overlay hides it)
+  const [{ notes, hasMore }, tags, likedIds] = await Promise.all([
+    getFilteredNotes(filters),
+    getTagCloud(),
+    user ? getUserLikedNoteIds(user.id) : Promise.resolve(new Set<number>()),
+  ])
+
+  // Fetch comments for initial notes
+  const noteIds = notes.map((n) => n.id)
+  const comments = await prisma.comment.findMany({
+    where: { note_id: { in: noteIds } },
+    orderBy: { id: "asc" },
+  })
+  const commentsByNote: Record<number, any[]> = {}
+  for (const c of comments) {
+    if (!commentsByNote[c.note_id]) commentsByNote[c.note_id] = []
+    commentsByNote[c.note_id].push({ ...c, created: c.created.toISOString() })
+  }
+
+  const notesWithComments = notes.map((n) => ({
+    ...n,
+    comments: commentsByNote[n.id] || [],
+  }))
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
+        {/* Main feed */}
+        <div className="space-y-4">
+          <Suspense fallback={<NotesLoading />}>
+            <NotesFeedClient
+              initialNotes={notesWithComments}
+              hasMore={hasMore}
+              hasPosted={hasPosted}
+              currentUser={user}
+              likedNoteIds={Array.from(likedIds)}
+              subjects={SUBJECTS}
+              coursesDict={COURSES_DICT}
+              searchParams={params}
+            />
+          </Suspense>
+        </div>
+
+        {/* Sidebar */}
+        <aside className="lg:sticky lg:top-20 space-y-4">
+          <NoteFilters
+            subjects={SUBJECTS}
+            coursesDict={COURSES_DICT}
+            tags={tags}
+          />
+        </aside>
+      </div>
+    </div>
+  )
+}

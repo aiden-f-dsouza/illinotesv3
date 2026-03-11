@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Note {
+  id         Int          @id @default(autoincrement())
+  author     String       @default("Anonymous") @db.VarChar(100)
+  title      String       @default("Untitled") @db.VarChar(200)
+  body       String
+  class_code String       @db.VarChar(50)
+  user_id    String       @db.VarChar(36)
+  tags       String?
+  created    DateTime     @default(now())
+  attachments Attachment[]
+  likes      Like[]
+  comments   Comment[]
+  mentions   Mention[]
+
+  @@index([user_id])
+  @@index([class_code])
+  @@index([created(sort: Desc)])
+  @@map("note")
+}
+
+model Attachment {
+  id                Int      @id @default(autoincrement())
+  note_id           Int
+  filename          String   @db.VarChar(255)
+  original_filename String   @db.VarChar(255)
+  file_type         String   @db.VarChar(10)
+  uploaded_at       DateTime @default(now())
+  extracted_text    String?
+  note              Note     @relation(fields: [note_id], references: [id], onDelete: Cascade)
+
+  @@index([note_id])
+  @@map("attachment")
+}
+
+model Like {
+  id      Int      @id @default(autoincrement())
+  note_id Int
+  user_id String   @db.VarChar(36)
+  created DateTime @default(now())
+  note    Note     @relation(fields: [note_id], references: [id], onDelete: Cascade)
+
+  @@unique([note_id, user_id])
+  @@index([user_id])
+  @@map("like")
+}
+
+model Comment {
+  id       Int       @id @default(autoincrement())
+  note_id  Int
+  author   String    @default("Anonymous") @db.VarChar(100)
+  body     String
+  user_id  String?   @db.VarChar(36)
+  created  DateTime  @default(now())
+  note     Note      @relation(fields: [note_id], references: [id], onDelete: Cascade)
+  mentions Mention[]
+
+  @@index([note_id])
+  @@map("comment")
+}
+
+model Mention {
+  id                   Int      @id @default(autoincrement())
+  comment_id           Int
+  note_id              Int
+  mentioned_user_email String   @db.VarChar(100)
+  mentioned_user_id    String?  @db.VarChar(36)
+  mentioning_author    String   @db.VarChar(100)
+  is_read              Boolean  @default(false)
+  created              DateTime @default(now())
+  comment              Comment  @relation(fields: [comment_id], references: [id], onDelete: Cascade)
+  note                 Note     @relation(fields: [note_id], references: [id], onDelete: Cascade)
+
+  @@index([mentioned_user_email])
+  @@index([mentioned_user_id])
+  @@map("mention")
+}
+
+model PasswordResetToken {
+  id         Int      @id @default(autoincrement())
+  email      String   @db.VarChar(100)
+  token      String   @unique @db.VarChar(255)
+  created_at DateTime @default(now())
+  is_used    Boolean  @default(false)
+
+  @@map("password_reset_token")
+}
+
+model EmailVerificationToken {
+  id         Int      @id @default(autoincrement())
+  email      String   @db.VarChar(100)
+  user_id    String   @db.VarChar(36)
+  token      String   @unique @db.VarChar(255)
+  created_at DateTime @default(now())
+  is_used    Boolean  @default(false)
+
+  @@map("email_verification_token")
+}
