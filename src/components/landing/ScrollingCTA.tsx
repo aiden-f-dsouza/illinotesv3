@@ -26,8 +26,7 @@ export function ScrollingCTA() {
         <Link href="/signup">
           <Button
             size="lg"
-            className="border-0 bg-gradient-to-br from-[var(--terracotta)] to-[var(--ochre)] text-white hover:opacity-90 text-base px-8 h-12"
-            style={{ boxShadow: "0 0 32px 6px color-mix(in srgb, var(--terracotta) 45%, transparent)" }}
+            className="border-0 bg-gradient-to-br from-[var(--terracotta)] to-[var(--ochre)] text-white hover:opacity-90 text-base px-8 h-12 [box-shadow:0_0_32px_6px_color-mix(in_srgb,var(--terracotta)_45%,transparent)] dark:[box-shadow:0_0_32px_6px_color-mix(in_srgb,var(--terracotta)_18%,transparent)]"
           >
             Start Sharing Notes
           </Button>
@@ -46,8 +45,7 @@ export function ScrollingCTA() {
       >
         <Link href="/signup" tabIndex={showSticky ? 0 : -1}>
           <Button
-            className="border-0 bg-[var(--terracotta)] hover:bg-[var(--terracotta)]/90 text-white px-5 h-9 text-sm"
-            style={{ boxShadow: "0 0 18px 4px color-mix(in srgb, var(--terracotta) 40%, transparent)" }}
+            className="border-0 bg-[var(--terracotta)] hover:bg-[var(--terracotta)]/90 text-white px-5 h-9 text-sm [box-shadow:0_0_18px_4px_color-mix(in_srgb,var(--terracotta)_40%,transparent)] dark:[box-shadow:0_0_18px_4px_color-mix(in_srgb,var(--terracotta)_15%,transparent)]"
           >
             Start Sharing Notes
           </Button>
