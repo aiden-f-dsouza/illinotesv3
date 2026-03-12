@@ -1,0 +1,168 @@
+import Link from "next/link"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/supabase/server"
+import { prisma } from "@/lib/db/prisma"
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr"
+import { BrowserMockup } from "@/components/landing/BrowserMockup"
+import { FeaturesCarousel } from "@/components/landing/FeaturesCarousel"
+import { ComparisonTable } from "@/components/landing/ComparisonTable"
+import { ScrollingCTA } from "@/components/landing/ScrollingCTA"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "IlliNotes — Collaborative Notes for UIUC",
+  description: "Share and discover class notes with fellow University of Illinois students.",
+}
+
+async function getRecentNotes() {
+  const notes = await prisma.note.findMany({
+    orderBy: { created: "desc" },
+    take: 3,
+    select: {
+      id: true,
+      title: true,
+      author: true,
+      class_code: true,
+      body: true,
+      created: true,
+      _count: { select: { likes: true, comments: true } },
+    },
+  })
+  return notes
+}
+
+export default async function LandingPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const recentNotes = await getRecentNotes()
+
+  return (
+    <div className="min-h-screen bg-[var(--paper)]">
+      {/* ── Hero + Mockup ── */}
+      <section className="relative min-h-screen flex flex-col">
+        {/* Background */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/hero-campus-background.png"
+            alt="UIUC Campus"
+            fill
+            className="object-cover opacity-55 dark:opacity-35"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--paper)]/30 via-[var(--paper)]/55 to-[var(--paper)]" />
+          <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-[var(--terracotta)]/6 to-transparent" />
+        </div>
+
+        {/* Text content — vertically centered in the viewport */}
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-5xl mx-auto w-full px-4 pt-28 pb-10 text-center">
+          <h1 className="font-serif font-black text-5xl md:text-6xl leading-[0.92] tracking-tight mb-8">
+            Share notes,{" "}
+            <span className="text-[var(--terracotta)] italic">ace</span>
+            <br />
+            your classes
+          </h1>
+
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+            IlliNotes is where UIUC students share class notes, collaborate on coursework,
+            and get AI-powered study help — all in one place.
+          </p>
+
+          <ScrollingCTA />
+        </div>
+
+        {/* Mockup — anchored to the bottom, peeking up from below the fold */}
+        <div className="relative z-10 max-w-4xl mx-auto w-full px-4">
+          <BrowserMockup />
+        </div>
+      </section>
+
+      {/* ── Features Carousel ── */}
+      <section className="py-20 bg-gradient-to-b from-[var(--paper)] to-[var(--paper-dark)]/30">
+        <div className="max-w-5xl mx-auto px-4 mb-10">
+          <h2 className="font-serif text-4xl font-bold text-center">
+            Everything you need
+          </h2>
+          <p className="text-muted-foreground text-center mt-3 max-w-xl mx-auto">
+            A complete toolkit for studying smarter at UIUC — not just a note dump.
+          </p>
+        </div>
+        <FeaturesCarousel />
+      </section>
+
+      {/* ── Comparison Table ── */}
+      <section className="py-20 bg-gradient-to-b from-[var(--paper-dark)]/30 via-[var(--paper-dark)]/50 to-[var(--paper-dark)]/30">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="font-serif text-4xl font-bold text-center mb-3">
+            Why IlliNotes Wins
+          </h2>
+          <p className="text-muted-foreground text-center mb-10 max-w-xl mx-auto">
+            Other tools solve pieces of the puzzle. IlliNotes was built for exactly this.
+          </p>
+          <ComparisonTable />
+        </div>
+      </section>
+
+      {/* ── Recent Notes Preview ── */}
+      {recentNotes.length > 0 && (
+        <section className="py-16 bg-gradient-to-b from-[var(--paper-dark)]/30 to-[var(--paper)]">
+          <div className="max-w-5xl mx-auto px-4">
+            <h2 className="font-serif text-3xl font-bold text-center mb-8">
+              Recently shared notes
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {recentNotes.map((note) => (
+                <div
+                  key={note.id}
+                  className="bg-card border border-border rounded-xl p-4 shadow-[var(--shadow-sm)] note-card-accent"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-serif font-bold text-sm line-clamp-2 flex-1">{note.title}</h3>
+                    <span className="text-xs font-mono bg-[var(--indigo-brand)]/10 text-[var(--indigo-brand)] px-2 py-0.5 rounded-full shrink-0">
+                      {note.class_code}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-3 mb-3">{note.body}</p>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>{note.author}</span>
+                    <span>·</span>
+                    <span>❤️ {note._count.likes}</span>
+                    <span>·</span>
+                    <span>💬 {note._count.comments}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <Link href={user ? "/notes" : "/signup"}>
+                <Button className="gap-2 bg-[var(--terracotta)] hover:bg-[var(--terracotta)]/90 text-white">
+                  {user ? "Browse all notes" : "Sign up to see more"}
+                  <ArrowRight size={15} />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── CTA ── */}
+      {!user && (
+        <section className="bg-gradient-to-b from-[var(--paper)] to-[var(--paper-dark)]/40">
+          <div className="max-w-3xl mx-auto px-4 py-20 text-center">
+            <h2 className="font-serif text-4xl font-bold mb-4">Ready to study smarter?</h2>
+            <p className="text-muted-foreground mb-8 text-lg">
+              Join thousands of UIUC students already sharing notes on IlliNotes.
+            </p>
+            <Link href="/signup">
+              <Button size="lg" className="gap-2 bg-gradient-to-br from-[var(--terracotta)] to-[var(--ochre)] text-white hover:opacity-90 text-base px-10 h-12">
+                Create your free account
+                <ArrowRight size={18} weight="bold" />
+              </Button>
+            </Link>
+          </div>
+        </section>
+      )}
+    </div>
+  )
+}

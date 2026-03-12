@@ -1,5 +1,4 @@
 import Link from "next/link"
-import Image from "next/image"
 import { getUserWithProfile } from "@/lib/auth/server"
 import { ThemeToggle } from "./ThemeToggle"
 import { MentionsBell } from "@/components/shared/MentionsBell"
@@ -41,8 +40,7 @@ export async function Navbar() {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href={user ? "/notes" : "/landing"} className="flex items-center gap-2 shrink-0">
-          <Image src="/logo.png" alt="IlliNotes" width={28} height={28} className="rounded" />
-          <span className="font-serif font-bold text-lg text-[var(--terracotta)] hidden sm:block">
+          <span className="font-serif font-bold text-lg text-[var(--terracotta)]">
             IlliNotes
           </span>
         </Link>
