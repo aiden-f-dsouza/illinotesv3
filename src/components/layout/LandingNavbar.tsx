@@ -10,7 +10,7 @@ import { CaretDown } from "@phosphor-icons/react/dist/ssr"
 
 export function LandingNavbar() {
   return (
-    <header className="absolute top-0 left-0 right-0 z-[1000] bg-transparent">
+    <header className="absolute top-0 left-0 right-0 z-[1000]">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-4">
         {/* Logo */}
         <Link href="/landing" className="shrink-0">
