@@ -48,11 +48,11 @@ export function HeroSection() {
         src={IMAGE_SRC}
         alt=""
         fill
-        className="object-cover opacity-55 dark:opacity-35"
+        className="object-cover opacity-75 dark:opacity-35"
         priority
       />
       {/* Gradient overlays */}
-      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[var(--paper)]/30 via-[var(--paper)]/55 to-[var(--paper)]" />
+      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[var(--paper)]/20 via-[var(--paper)]/45 to-[var(--paper)]" />
       <div className="absolute bottom-0 left-0 right-0 z-[1] h-64 bg-gradient-to-t from-[var(--terracotta)]/6 to-transparent" />
 
       {/* Hero text */}

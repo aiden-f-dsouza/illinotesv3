@@ -16,6 +16,7 @@
     "@prisma/client": "^7.4.2",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.0",
+    "@tailwindcss/typography": "^0.5.19",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.4",
     "class-variance-authority": "^0.7.1",
