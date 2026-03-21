@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { NotePencil, BookOpen, Trophy, Sparkle, SignOut, User } from "@phosphor-icons/react/dist/ssr"
+import { BookOpen, Trophy, Sparkle, SignOut, User } from "@phosphor-icons/react/dist/ssr"
 
 export async function Navbar() {
   const user = await getUserWithProfile()

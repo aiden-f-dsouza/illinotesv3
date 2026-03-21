@@ -1,14 +1,13 @@
 import { Footer } from "@/components/layout/Footer"
 import { AIChatWidget } from "@/components/chat/AIChatWidget"
-import { createClient } from "@/lib/supabase/server"
+import { getUserWithProfile } from "@/lib/auth/server"
 
 export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUserWithProfile()
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

@@ -61,12 +61,10 @@ There are a few specifics that should be considered as we build new pages or cha
 The other biggest thing is the lack of mobile optimization on the current site, as we add new pages and change current ones, I want you to go through and consider how each design shows up on mobile, right now the site is essentially nonfunctional on mobile, so consider the order in which things go up, how they repond to resizing, possible navbar issues, and anything else that might show up on mobile that would make the site less functional or look unprofessional on mobile.
 
 When building frontend UIs, avoid generic AI-generated aesthetics:
-- Never use: Inter, Roboto, Arial, or system fonts
 - Never use: purple gradients on white backgrounds
 - Never use: predictable, cookie-cutter layouts
 
 Typography: Choose distinctive fonts. Good options:
-- Code aesthetic: JetBrains Mono, Space Grotesk
 - Editorial: Playfair Display, Fraunces
 - Startup: Clash Display, Satoshi
 - Use extreme weight contrast (100 vs 900, not 400 vs 600)

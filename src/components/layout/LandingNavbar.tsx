@@ -71,11 +71,6 @@ export function LandingNavbar() {
       {/* Mobile dropdown panel */}
       {mobileOpen && (
         <div className="md:hidden bg-[var(--paper)]/95 backdrop-blur-sm border-b border-border/40 px-6 py-4 flex flex-col gap-1">
-          <Link href="/notes" onClick={() => setMobileOpen(false)}>
-            <Button variant="ghost" size="sm" className="w-full justify-start text-foreground/70 hover:text-foreground">
-              Notes Feed
-            </Button>
-          </Link>
           <Link href="/leaderboard" onClick={() => setMobileOpen(false)}>
             <Button variant="ghost" size="sm" className="w-full justify-start text-foreground/70 hover:text-foreground">
               Leaderboard
