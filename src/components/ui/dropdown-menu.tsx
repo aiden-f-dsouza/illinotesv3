@@ -15,7 +15,8 @@ function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
 }
 
 function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
-  return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
+  const id = React.useId()
+  return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" id={id} suppressHydrationWarning {...props} />
 }
 
 function DropdownMenuContent({
@@ -77,10 +78,12 @@ function DropdownMenuItem({
   className,
   inset,
   variant = "default",
+  asChild,
   ...props
 }: MenuPrimitive.Item.Props & {
   inset?: boolean
   variant?: "default" | "destructive"
+  asChild?: boolean
 }) {
   return (
     <MenuPrimitive.Item

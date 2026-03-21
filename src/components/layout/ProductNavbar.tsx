@@ -60,11 +60,11 @@ export function ProductNavbar({ user }: { user: NavUser }) {
               <CaretDown size={12} weight="bold" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href="/summarizer" className="w-full">AI Summarizer</Link>
+              <DropdownMenuItem>
+                <Link href="/summarizer" className="w-full block">AI Summarizer</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/forum" className="w-full">Forum</Link>
+              <DropdownMenuItem>
+                <Link href="/forum" className="w-full block">Forum</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
