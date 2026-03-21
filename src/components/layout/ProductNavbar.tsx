@@ -26,7 +26,7 @@ export function ProductNavbar({ user }: { user: NavUser }) {
 
   return (
     <header className="sticky top-0 z-[1000] bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+      <div className="px-6 md:px-8 h-14 flex items-center justify-between gap-4">
         {/* Left side: logo + optional back link */}
         <div className="flex items-center gap-3 shrink-0">
           <Link href="/notes">
