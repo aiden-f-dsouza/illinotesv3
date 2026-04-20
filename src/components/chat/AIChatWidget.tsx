@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import ReactMarkdown from "react-markdown"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -69,16 +70,25 @@ export function AIChatWidget({ isLoggedIn }: Props) {
         }),
       })
 
-      const data = await res.json()
-      if (data.error) {
+      if (!res.ok) {
+        const text = await res.text()
+        let errorMsg = `Server error (${res.status})`
+        try {
+          const data = JSON.parse(text)
+          if (data.error) errorMsg = data.error
+        } catch {
+          // response wasn't JSON
+        }
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: `⚠️ ${data.error}` },
+          { role: "assistant", content: `⚠️ ${errorMsg}` },
         ])
       } else {
+        const data = await res.json()
         setMessages((prev) => [...prev, { role: "assistant", content: data.reply }])
       }
-    } catch {
+    } catch (err) {
+      console.error("Chat fetch error:", err)
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: "Connection error. Please try again." },
@@ -176,12 +186,18 @@ export function AIChatWidget({ isLoggedIn }: Props) {
                         : "bg-muted text-foreground"
                     }`}
                   >
-                    {msg.content.split("\n").map((line, j) => (
-                      <span key={j}>
-                        {line}
-                        {j < msg.content.split("\n").length - 1 && <br />}
-                      </span>
-                    ))}
+                    {msg.role === "user" ? (
+                      msg.content.split("\n").map((line, j) => (
+                        <span key={j}>
+                          {line}
+                          {j < msg.content.split("\n").length - 1 && <br />}
+                        </span>
+                      ))
+                    ) : (
+                      <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-headings:my-2 prose-headings:text-sm prose-headings:font-semibold">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

@@ -4,9 +4,8 @@ import { summarizeNote } from "@/lib/ai/summarize"
 import { z } from "zod"
 
 const schema = z.object({
-  title: z.string().min(1).max(200),
   body: z.string().min(10).max(50000),
-  classCode: z.string().min(1).max(20),
+  classCode: z.string().max(20).optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const summary = await summarizeNote(parsed.data.title, parsed.data.body, parsed.data.classCode)
+    const summary = await summarizeNote(parsed.data.body, parsed.data.classCode)
     return NextResponse.json({ summary })
   } catch (error) {
     console.error("Summarize error:", error)

@@ -1,14 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import ReactMarkdown from "react-markdown"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Sparkle } from "@phosphor-icons/react"
-import type { Metadata } from "next"
 
 export default function SummarizerPage() {
-  const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
   const [classCode, setClassCode] = useState("")
   const [summary, setSummary] = useState("")
@@ -25,7 +24,7 @@ export default function SummarizerPage() {
       const res = await fetch("/api/summarize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, body, classCode }),
+        body: JSON.stringify({ body, classCode: classCode || undefined }),
       })
       const data = await res.json()
       if (data.error) setError(data.error)
@@ -47,25 +46,15 @@ export default function SummarizerPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium mb-1.5">Note title</label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Lecture 7 – Sorting Algorithms"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1.5">Course</label>
-            <Input
-              value={classCode}
-              onChange={(e) => setClassCode(e.target.value)}
-              placeholder="e.g. CS225"
-              required
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            Course <span className="text-muted-foreground font-normal">(optional)</span>
+          </label>
+          <Input
+            value={classCode}
+            onChange={(e) => setClassCode(e.target.value)}
+            placeholder="e.g. CS225"
+          />
         </div>
 
         <div>
@@ -87,7 +76,7 @@ export default function SummarizerPage() {
           className="w-full gap-2 bg-gradient-to-br from-[var(--terracotta)] to-[var(--ochre)] text-white hover:opacity-90"
         >
           <Sparkle size={16} weight="bold" />
-          {loading ? "Summarizing…" : "Summarize notes"}
+          {loading ? "Summarizing..." : "Summarize notes"}
         </Button>
       </form>
 
@@ -99,18 +88,8 @@ export default function SummarizerPage() {
 
       {summary && (
         <div className="mt-6 bg-card border border-border rounded-xl p-6 shadow-[var(--shadow-sm)]">
-          <h2 className="font-serif text-xl font-bold mb-4 text-[var(--terracotta)]">Summary</h2>
-          <div className="prose prose-sm max-w-none">
-            {summary.split("\n").map((line, i) => {
-              if (line.startsWith("**") && line.endsWith("**")) {
-                return <h3 key={i} className="font-semibold mt-4 mb-1 text-foreground">{line.slice(2, -2)}</h3>
-              }
-              if (line.startsWith("- ") || line.startsWith("• ")) {
-                return <li key={i} className="ml-4 text-muted-foreground">{line.slice(2)}</li>
-              }
-              if (line.trim() === "") return <br key={i} />
-              return <p key={i} className="text-muted-foreground">{line}</p>
-            })}
+          <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[var(--terracotta)] prose-strong:text-foreground prose-li:text-muted-foreground prose-p:text-muted-foreground">
+            <ReactMarkdown>{summary}</ReactMarkdown>
           </div>
         </div>
       )}

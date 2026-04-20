@@ -25,14 +25,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  // Rate limit: 30/day per user
-  const { success, reset } = await checkLimit(chatLimiter, `chat:${user.id}`)
-  if (!success) {
-    const resetDate = reset ? new Date(reset).toLocaleTimeString() : "tomorrow"
-    return NextResponse.json(
-      { error: `Daily chat limit reached (30/day). Resets at ${resetDate}.` },
-      { status: 429 }
-    )
+  let rateLimitOk = true
+  try {
+    const { success, reset } = await checkLimit(chatLimiter, `chat:${user.id}`)
+    if (!success) {
+      const resetDate = reset ? new Date(reset).toLocaleTimeString() : "tomorrow"
+      return NextResponse.json(
+        { error: `Daily chat limit reached (30/day). Resets at ${resetDate}.` },
+        { status: 429 }
+      )
+    }
+  } catch (e: any) {
+    console.error("Rate limit error:", e?.message)
+    // Continue without rate limiting rather than blocking the user
   }
 
   let body: any
@@ -44,14 +49,21 @@ export async function POST(request: NextRequest) {
 
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 })
+    return NextResponse.json({ error: `Invalid request: ${parsed.error.issues.map(i => i.message).join(", ")}` }, { status: 400 })
   }
 
   try {
     const reply = await getChatResponse(parsed.data.messages, parsed.data.noteContext)
     return NextResponse.json({ reply })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Chat error:", error)
-    return NextResponse.json({ error: "AI service error. Please try again." }, { status: 500 })
+    const msg = error?.status === 401
+      ? "OpenAI API key is invalid."
+      : error?.status === 429
+        ? "OpenAI rate limit hit. Try again in a moment."
+        : error?.code === "insufficient_quota"
+          ? "OpenAI quota exceeded."
+          : `AI service error: ${error?.message || "Unknown error"}`
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
