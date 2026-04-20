@@ -12,21 +12,7 @@ export function HeroSection() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    let done = false
-    function reveal() {
-      if (done) return
-      done = true
-      setReady(true)
-    }
-
-    const img = new window.Image()
-    img.onload = reveal
-    img.onerror = reveal // reveal even on failure so page never hangs
-    img.src = IMAGE_SRC
-
-    // Fallback: reveal after 2.5s regardless
-    const timer = setTimeout(reveal, 2500)
-    return () => clearTimeout(timer)
+    setReady(true)
   }, [])
 
   const word = (delayMs: number) => ({
