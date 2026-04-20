@@ -1,13 +1,17 @@
-import { Navbar } from "@/components/layout/Navbar"
+import { ProductNavbar } from "@/components/layout/ProductNavbar"
+import { getUserWithProfile } from "@/lib/auth/server"
 
-export default function AccountLayout({
+export default async function AccountLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const user = await getUserWithProfile()
+  const navUser = user ? { displayName: user.displayName, username: user.username } : null
+
   return (
     <>
-      <Navbar />
+      <ProductNavbar user={navUser} />
       {children}
     </>
   )
