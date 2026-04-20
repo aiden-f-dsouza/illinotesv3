@@ -1,7 +1,9 @@
 "use client"
 
+import { Suspense } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -11,14 +13,51 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { CaretLeft, CaretDown, User, SignOut } from "@phosphor-icons/react/dist/ssr"
+import { CaretLeft, CaretDown, User, SignOut, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr"
 import { ThemeToggle } from "./ThemeToggle"
 import { logoutAction } from "@/lib/auth/actions"
 
 type NavUser = { displayName: string; username: string } | null
 
+function NotesSearchBar() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get("search") || "")
+  const [, startTransition] = useTransition()
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const params = new URLSearchParams(searchParams.toString())
+    if (query.trim()) {
+      params.set("search", query.trim())
+    } else {
+      params.delete("search")
+    }
+    params.delete("page")
+    startTransition(() => router.push(`/notes?${params.toString()}`))
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="relative">
+        <MagnifyingGlass
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search notes..."
+          className="h-9 pl-9 pr-3 w-full rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[var(--terracotta)]/30 focus:border-[var(--terracotta)] transition-colors"
+        />
+      </div>
+    </form>
+  )
+}
+
 export function ProductNavbar({ user }: { user: NavUser }) {
   const pathname = usePathname()
+  const isNotesPage = pathname === "/notes"
 
   const initials = user
     ? (user.displayName || user.username).slice(0, 2).toUpperCase()
@@ -29,13 +68,13 @@ export function ProductNavbar({ user }: { user: NavUser }) {
       <div className="px-6 md:px-8 h-14 flex items-center justify-between gap-4">
         {/* Left side: logo + optional back link */}
         <div className="flex items-center gap-3 shrink-0">
-          <Link href="/notes">
+          <Link href="/landing">
             <span className="font-serif font-bold text-xl lowercase text-[var(--terracotta)] tracking-tight">
               illinotes
             </span>
           </Link>
 
-          {pathname !== "/notes" && (
+          {!isNotesPage && (
             <Link
               href="/notes"
               className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -46,8 +85,17 @@ export function ProductNavbar({ user }: { user: NavUser }) {
           )}
         </div>
 
+        {/* Center: search bar (notes page only) */}
+        {isNotesPage && (
+          <div className="flex-1 flex justify-center px-4">
+            <Suspense fallback={null}>
+              <NotesSearchBar />
+            </Suspense>
+          </div>
+        )}
+
         {/* Right side */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <Link href="/leaderboard">
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               Leaderboard

@@ -6,9 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { CourseDropdown } from "./CourseDropdown"
 import { createNoteAction } from "@/lib/notes/actions"
-import { Paperclip, X } from "@phosphor-icons/react"
+import { Paperclip, X, ShieldCheck } from "@phosphor-icons/react"
 import { toast } from "sonner"
 
 interface Props {
@@ -21,7 +20,8 @@ interface Props {
 
 export function CreateNoteModal({ open, onClose, subjects, coursesDict, onSuccess }: Props) {
   const router = useRouter()
-  const [selectedCourse, setSelectedCourse] = useState("")
+  const [selectedSubject, setSelectedSubject] = useState("")
+  const [selectedNumber, setSelectedNumber] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isPending, startTransition] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -31,7 +31,7 @@ export function CreateNoteModal({ open, onClose, subjects, coursesDict, onSucces
     e.preventDefault()
     const form = e.currentTarget
     const formData = new FormData(form)
-    formData.set("class", selectedCourse)
+    formData.set("class", selectedSubject + selectedNumber)
     if (selectedFile) formData.set("file", selectedFile)
 
     startTransition(async () => {
@@ -41,7 +41,8 @@ export function CreateNoteModal({ open, onClose, subjects, coursesDict, onSucces
       } else {
         toast.success("Note posted!")
         formRef.current?.reset()
-        setSelectedCourse("")
+        setSelectedSubject("")
+        setSelectedNumber("")
         setSelectedFile(null)
         onClose()
         onSuccess?.()
@@ -52,7 +53,7 @@ export function CreateNoteModal({ open, onClose, subjects, coursesDict, onSucces
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-serif text-xl">Share a note</DialogTitle>
         </DialogHeader>
@@ -65,13 +66,32 @@ export function CreateNoteModal({ open, onClose, subjects, coursesDict, onSucces
 
           <div>
             <label className="block text-sm font-medium mb-1.5">Course</label>
-            <CourseDropdown
-              subjects={subjects}
-              coursesDict={coursesDict}
-              value={selectedCourse}
-              onChange={setSelectedCourse}
-              placeholder="Select a course"
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={selectedSubject}
+                onChange={(e) => {
+                  setSelectedSubject(e.target.value)
+                  setSelectedNumber("")
+                }}
+                className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm hover:border-[var(--terracotta)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--terracotta)]/30 text-foreground"
+              >
+                <option value="" disabled>Subject</option>
+                {subjects.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              <select
+                value={selectedNumber}
+                onChange={(e) => setSelectedNumber(e.target.value)}
+                disabled={!selectedSubject}
+                className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm hover:border-[var(--terracotta)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--terracotta)]/30 disabled:opacity-50 disabled:cursor-not-allowed text-foreground"
+              >
+                <option value="" disabled>Number</option>
+                {(coursesDict[selectedSubject] || []).map((n) => (
+                  <option key={n} value={String(n)}>{n}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>
@@ -129,10 +149,17 @@ export function CreateNoteModal({ open, onClose, subjects, coursesDict, onSucces
             )}
           </div>
 
+          <div className="flex gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+            <ShieldCheck size={14} className="mt-0.5 shrink-0 text-[var(--terracotta)]" />
+            <span>
+              Share study notes and educational resources only. Do not upload exam answers, solutions to graded assignments, or any material that violates your institution&apos;s academic integrity policy.
+            </span>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <Button
               type="submit"
-              disabled={isPending || !selectedCourse}
+              disabled={isPending || !selectedSubject || !selectedNumber}
               className="flex-1 bg-gradient-to-br from-[var(--terracotta)] to-[var(--ochre)] text-white hover:opacity-90"
             >
               {isPending ? "Posting…" : "Post note"}

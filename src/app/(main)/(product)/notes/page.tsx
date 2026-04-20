@@ -3,7 +3,6 @@ import { getUserWithProfile } from "@/lib/auth/server"
 import { getFilteredNotes, getUserLikedNoteIds, getTagCloud, userHasPosted } from "@/lib/notes/queries"
 import { prisma } from "@/lib/db/prisma"
 import { COURSES_DICT, SUBJECTS } from "@/lib/courses/loader"
-import { NoteFilters } from "@/components/notes/NoteFilters"
 import { NotesFeedClient } from "@/components/notes/NotesFeedClient"
 import NotesLoading from "./loading"
 import type { Metadata } from "next"
@@ -31,7 +30,7 @@ export default async function NotesPage({ searchParams }: Props) {
   const hasPosted = user ? await userHasPosted(user.id) : false
 
   // Always fetch data (even for gated users — server renders it, gate overlay hides it)
-  const [{ notes, hasMore }, tags, likedIds] = await Promise.all([
+  const [{ notes, hasMore, total }, tags, likedIds] = await Promise.all([
     getFilteredNotes(filters),
     getTagCloud(),
     user ? getUserLikedNoteIds(user.id) : Promise.resolve(new Set<number>()),
@@ -55,33 +54,22 @@ export default async function NotesPage({ searchParams }: Props) {
   }))
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
-        {/* Main feed */}
-        <div className="space-y-4">
-          <Suspense fallback={<NotesLoading />}>
-            <NotesFeedClient
-              initialNotes={notesWithComments}
-              hasMore={hasMore}
-              hasPosted={hasPosted}
-              currentUser={user}
-              likedNoteIds={Array.from(likedIds)}
-              subjects={SUBJECTS}
-              coursesDict={COURSES_DICT}
-              searchParams={params}
-            />
-          </Suspense>
-        </div>
-
-        {/* Sidebar */}
-        <aside className="lg:sticky lg:top-20 space-y-4">
-          <NoteFilters
-            subjects={SUBJECTS}
-            coursesDict={COURSES_DICT}
-            tags={tags}
-          />
-        </aside>
-      </div>
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      <Suspense fallback={<NotesLoading />}>
+        <NotesFeedClient
+          initialNotes={notesWithComments}
+          hasMore={hasMore}
+          hasPosted={hasPosted}
+          currentUser={user}
+          likedNoteIds={Array.from(likedIds)}
+          subjects={SUBJECTS}
+          coursesDict={COURSES_DICT}
+          searchParams={params}
+          tags={tags}
+          total={total}
+          displayName={user?.displayName || user?.username || null}
+        />
+      </Suspense>
     </div>
   )
 }

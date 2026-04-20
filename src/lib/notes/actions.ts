@@ -131,6 +131,10 @@ export async function deleteNoteAction(noteId: number): Promise<ActionResult> {
       .remove(attachments.map((a) => a.filename))
   }
 
+  await prisma.like.deleteMany({ where: { note_id: noteId } })
+  await prisma.mention.deleteMany({ where: { note_id: noteId } })
+  await prisma.comment.deleteMany({ where: { note_id: noteId } })
+  await prisma.attachment.deleteMany({ where: { note_id: noteId } })
   await prisma.note.delete({ where: { id: noteId } })
 
   revalidatePath("/notes")
