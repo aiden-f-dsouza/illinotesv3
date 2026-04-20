@@ -12,7 +12,8 @@ export async function GET() {
       class_code: true,
       body: true,
       created: true,
-      _count: { select: { likes: true, comments: true } },
+      score: true,
+      _count: { select: { comments: true } },
     },
   })
 

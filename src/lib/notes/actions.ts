@@ -131,7 +131,7 @@ export async function deleteNoteAction(noteId: number): Promise<ActionResult> {
       .remove(attachments.map((a) => a.filename))
   }
 
-  await prisma.like.deleteMany({ where: { note_id: noteId } })
+  await prisma.vote.deleteMany({ where: { note_id: noteId } })
   await prisma.mention.deleteMany({ where: { note_id: noteId } })
   await prisma.comment.deleteMany({ where: { note_id: noteId } })
   await prisma.attachment.deleteMany({ where: { note_id: noteId } })
@@ -141,27 +141,44 @@ export async function deleteNoteAction(noteId: number): Promise<ActionResult> {
   return { success: "Note deleted." }
 }
 
-// ─── LIKE TOGGLE ──────────────────────────────────────────────────────────────
+// ─── VOTE ────────────────────────────────────────────────────────────────────
 
-export async function toggleLikeAction(
-  noteId: number
-): Promise<{ liked: boolean; count: number } | { error: string }> {
+export async function voteAction(
+  noteId: number,
+  value: 1 | -1
+): Promise<{ userVote: number | null; score: number } | { error: string }> {
   const user = await getUserWithProfile()
   if (!user) return { error: "Not authenticated." }
 
-  const existing = await prisma.like.findUnique({
-    where: { note_id_user_id: { note_id: noteId, user_id: user.id } },
+  const result = await prisma.$transaction(async (tx) => {
+    const existing = await tx.vote.findUnique({
+      where: { note_id_user_id: { note_id: noteId, user_id: user.id } },
+    })
+
+    let userVote: number | null
+
+    if (!existing) {
+      // New vote
+      await tx.vote.create({ data: { note_id: noteId, user_id: user.id, value } })
+      await tx.note.update({ where: { id: noteId }, data: { score: { increment: value } } })
+      userVote = value
+    } else if (existing.value === value) {
+      // Same direction — remove vote
+      await tx.vote.delete({ where: { id: existing.id } })
+      await tx.note.update({ where: { id: noteId }, data: { score: { increment: -value } } })
+      userVote = null
+    } else {
+      // Opposite direction — switch vote
+      await tx.vote.update({ where: { id: existing.id }, data: { value } })
+      await tx.note.update({ where: { id: noteId }, data: { score: { increment: 2 * value } } })
+      userVote = value
+    }
+
+    const note = await tx.note.findUniqueOrThrow({ where: { id: noteId }, select: { score: true } })
+    return { userVote, score: note.score }
   })
 
-  if (existing) {
-    await prisma.like.delete({ where: { id: existing.id } })
-  } else {
-    await prisma.like.create({ data: { note_id: noteId, user_id: user.id } })
-  }
-
-  const count = await prisma.like.count({ where: { note_id: noteId } })
-  revalidatePath("/notes")
-  return { liked: !existing, count }
+  return result
 }
 
 // ─── ADD COMMENT ──────────────────────────────────────────────────────────────

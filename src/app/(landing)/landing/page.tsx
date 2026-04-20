@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/db/prisma"
-import { ArrowRight, Heart, ChatTeardropText } from "@phosphor-icons/react/dist/ssr"
+import { ArrowRight, ArrowFatUp, ChatTeardropText } from "@phosphor-icons/react/dist/ssr"
 import { FeaturesCarousel } from "@/components/landing/FeaturesCarousel"
 import { ComparisonTable } from "@/components/landing/ComparisonTable"
 import { HeroSection } from "@/components/landing/HeroSection"
@@ -25,7 +25,8 @@ async function getRecentNotes() {
       class_code: true,
       body: true,
       created: true,
-      _count: { select: { likes: true, comments: true } },
+      score: true,
+      _count: { select: { comments: true } },
     },
   })
   return notes
@@ -100,8 +101,8 @@ export default async function LandingPage() {
                     <span>{note.author}</span>
                     <span>·</span>
                     <span className="flex items-center gap-1">
-                      <Heart size={12} className="text-[var(--like-inactive)]" />
-                      {note._count.likes}
+                      <ArrowFatUp size={12} className="text-muted-foreground" />
+                      {note.score}
                     </span>
                     <span>·</span>
                     <span className="flex items-center gap-1">

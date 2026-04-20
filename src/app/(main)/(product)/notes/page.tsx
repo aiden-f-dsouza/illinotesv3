@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import { getUserWithProfile } from "@/lib/auth/server"
-import { getFilteredNotes, getUserLikedNoteIds, getTagCloud, userHasPosted } from "@/lib/notes/queries"
+import { getFilteredNotes, getUserVotes, getTagCloud, userHasPosted } from "@/lib/notes/queries"
 import { prisma } from "@/lib/db/prisma"
 import { COURSES_DICT, SUBJECTS } from "@/lib/courses/loader"
 import { NotesFeedClient } from "@/components/notes/NotesFeedClient"
@@ -30,10 +30,10 @@ export default async function NotesPage({ searchParams }: Props) {
   const hasPosted = user ? await userHasPosted(user.id) : false
 
   // Always fetch data (even for gated users — server renders it, gate overlay hides it)
-  const [{ notes, hasMore, total }, tags, likedIds] = await Promise.all([
+  const [{ notes, hasMore, total }, tags, votesMap] = await Promise.all([
     getFilteredNotes(filters),
     getTagCloud(),
-    user ? getUserLikedNoteIds(user.id) : Promise.resolve(new Set<number>()),
+    user ? getUserVotes(user.id) : Promise.resolve(new Map<number, number>()),
   ])
 
   // Fetch comments for initial notes
@@ -61,7 +61,7 @@ export default async function NotesPage({ searchParams }: Props) {
           hasMore={hasMore}
           hasPosted={hasPosted}
           currentUser={user}
-          likedNoteIds={Array.from(likedIds)}
+          userVotes={Object.fromEntries(votesMap)}
           subjects={SUBJECTS}
           coursesDict={COURSES_DICT}
           searchParams={params}

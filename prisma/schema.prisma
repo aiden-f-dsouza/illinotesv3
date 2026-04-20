@@ -15,14 +15,16 @@ model Note {
   user_id    String       @db.VarChar(36)
   tags       String?
   created    DateTime     @default(now())
+  score      Int          @default(0)
   attachments Attachment[]
-  likes      Like[]
+  votes      Vote[]
   comments   Comment[]
   mentions   Mention[]
 
   @@index([user_id])
   @@index([class_code])
   @@index([created(sort: Desc)])
+  @@index([score(sort: Desc)])
   @@map("note")
 }
 
@@ -40,16 +42,17 @@ model Attachment {
   @@map("attachment")
 }
 
-model Like {
+model Vote {
   id      Int      @id @default(autoincrement())
   note_id Int
   user_id String   @db.VarChar(36)
+  value   Int
   created DateTime @default(now())
   note    Note     @relation(fields: [note_id], references: [id], onDelete: Cascade)
 
   @@unique([note_id, user_id])
   @@index([user_id])
-  @@map("like")
+  @@map("vote")
 }
 
 model Comment {

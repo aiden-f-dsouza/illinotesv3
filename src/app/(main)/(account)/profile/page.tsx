@@ -15,11 +15,12 @@ export default async function ProfilePage() {
   const user = await getUserWithProfile()
   if (!user) redirect("/login")
 
-  const [noteCount, likeCount, commentCount, userNotes, userComments] =
+  const [noteCount, scoreResult, commentCount, userNotes, userComments] =
     await Promise.all([
       prisma.note.count({ where: { user_id: user.id } }),
-      prisma.like.count({
-        where: { note: { user_id: user.id } },
+      prisma.note.aggregate({
+        where: { user_id: user.id },
+        _sum: { score: true },
       }),
       prisma.comment.count({ where: { user_id: user.id } }),
       prisma.note.findMany({
@@ -27,7 +28,7 @@ export default async function ProfilePage() {
         orderBy: { created: "desc" },
         include: {
           attachments: true,
-          _count: { select: { likes: true, comments: true } },
+          _count: { select: { comments: true } },
         },
       }),
       prisma.comment.findMany({
@@ -99,9 +100,9 @@ export default async function ProfilePage() {
             </p>
           </div>
           <div>
-            <p className="text-2xl font-bold font-serif">{likeCount}</p>
+            <p className="text-2xl font-bold font-serif">{scoreResult._sum.score ?? 0}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Likes received
+              Vote score
             </p>
           </div>
           <div>

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db/prisma"
 import { createClient } from "@/lib/supabase/server"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Trophy, Heart, NotePencil, ChatCircle, Star } from "@phosphor-icons/react/dist/ssr"
+import { Trophy, ArrowFatUp, NotePencil, ChatCircle, Star } from "@phosphor-icons/react/dist/ssr"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = { title: "Leaderboard" }
@@ -16,12 +16,11 @@ interface LeaderEntry {
 }
 
 async function getLeaderboards() {
-  // Top liked notes authors
-  const topLikedRaw = await prisma.$queryRaw<{ user_id: string; author: string; total: bigint }[]>`
-    SELECT n.user_id, n.author, COUNT(l.id) as total
-    FROM "note" n
-    JOIN "like" l ON l.note_id = n.id
-    GROUP BY n.user_id, n.author
+  // Highest rated note authors (by total vote score)
+  const topRatedRaw = await prisma.$queryRaw<{ user_id: string; author: string; total: bigint }[]>`
+    SELECT user_id, author, SUM(score) as total
+    FROM "note"
+    GROUP BY user_id, author
     ORDER BY total DESC
     LIMIT 5
   `
@@ -58,7 +57,7 @@ async function getLeaderboards() {
   // Collect all unique user IDs to fetch profiles
   const allUserIds = [
     ...new Set([
-      ...topLikedRaw,
+      ...topRatedRaw,
       ...topPostersRaw,
       ...topCommentersRaw,
       ...topCommentedOnRaw,
@@ -92,7 +91,7 @@ async function getLeaderboards() {
   }
 
   return {
-    topLiked: enrich(topLikedRaw),
+    topRated: enrich(topRatedRaw),
     topPosters: enrich(topPostersRaw),
     topCommenters: enrich(topCommentersRaw),
     topCommentedOn: enrich(topCommentedOnRaw),
@@ -160,7 +159,7 @@ function LeaderboardCard({
 }
 
 export default async function LeaderboardPage() {
-  const { topLiked, topPosters, topCommenters, topCommentedOn } = await getLeaderboards()
+  const { topRated, topPosters, topCommenters, topCommentedOn } = await getLeaderboards()
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -176,10 +175,10 @@ export default async function LeaderboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <LeaderboardCard
-          title="Most Liked Notes"
-          icon={<Heart size={16} weight="fill" />}
-          entries={topLiked}
-          unit="likes"
+          title="Highest Rated"
+          icon={<ArrowFatUp size={16} weight="fill" />}
+          entries={topRated}
+          unit="points"
         />
         <LeaderboardCard
           title="Top Note Sharers"

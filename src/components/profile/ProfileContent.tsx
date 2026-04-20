@@ -238,7 +238,7 @@ function ProfileNoteCard({
             </Badge>
             <span>{timeAgo(note.created)}</span>
             <span>·</span>
-            <span>{note._count.likes} likes</span>
+            <span>{note.score} points</span>
             <span>·</span>
             <span>{note._count.comments} comments</span>
           </div>

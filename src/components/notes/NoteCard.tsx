@@ -2,14 +2,14 @@
 
 import { useState, useTransition } from "react"
 import { motion } from "framer-motion"
-import { Heart, PencilSimple, Trash, BookOpen } from "@phosphor-icons/react"
+import { ArrowFatUp, ArrowFatDown, PencilSimple, Trash, BookOpen } from "@phosphor-icons/react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { DotsThree } from "@phosphor-icons/react"
 import { AttachmentList } from "./AttachmentList"
 import { CommentSection } from "@/components/comments/CommentSection"
-import { toggleLikeAction, deleteNoteAction } from "@/lib/notes/actions"
+import { voteAction, deleteNoteAction } from "@/lib/notes/actions"
 import { timeAgo } from "@/lib/utils"
 import { toast } from "sonner"
 import type { NoteWithCounts } from "@/types"
@@ -19,38 +19,48 @@ interface Props {
   note: NoteWithCounts & { comments: Comment[] }
   currentUserId?: string
   isAdmin?: boolean
-  isLiked?: boolean
+  userVote?: number | null
   index?: number
   onEdit?: (note: NoteWithCounts) => void
   onAskAI?: (note: NoteWithCounts) => void
 }
 
-export function NoteCard({ note, currentUserId, isAdmin, isLiked: initialLiked, index = 0, onEdit, onAskAI }: Props) {
-  const [liked, setLiked] = useState(initialLiked ?? false)
-  const [likeCount, setLikeCount] = useState(note._count.likes)
+export function NoteCard({ note, currentUserId, isAdmin, userVote: initialVote, index = 0, onEdit, onAskAI }: Props) {
+  const [currentVote, setCurrentVote] = useState<number | null>(initialVote ?? null)
+  const [score, setScore] = useState(note.score)
   const [isPending, startTransition] = useTransition()
 
   const canModify = currentUserId && (note.user_id === currentUserId || isAdmin)
 
-  function handleLike() {
+  function handleVote(value: 1 | -1) {
     if (!currentUserId) {
-      toast.error("Please sign in to like notes.")
+      toast.error("Please sign in to vote.")
       return
     }
     // Optimistic update
-    setLiked(!liked)
-    setLikeCount((c) => c + (liked ? -1 : 1))
+    const prevVote = currentVote
+    const prevScore = score
+
+    if (currentVote === null) {
+      setCurrentVote(value)
+      setScore((s) => s + value)
+    } else if (currentVote === value) {
+      setCurrentVote(null)
+      setScore((s) => s - value)
+    } else {
+      setCurrentVote(value)
+      setScore((s) => s + 2 * value)
+    }
 
     startTransition(async () => {
-      const result = await toggleLikeAction(note.id)
+      const result = await voteAction(note.id, value)
       if ("error" in result) {
-        // Revert
-        setLiked(liked)
-        setLikeCount((c) => c + (liked ? 1 : -1))
+        setCurrentVote(prevVote)
+        setScore(prevScore)
         toast.error(result.error)
       } else {
-        setLiked(result.liked)
-        setLikeCount(result.count)
+        setCurrentVote(result.userVote)
+        setScore(result.score)
       }
     })
   }
@@ -135,23 +145,35 @@ export function NoteCard({ note, currentUserId, isAdmin, isLiked: initialLiked, 
       {/* Attachments */}
       <AttachmentList attachments={note.attachments} />
 
-      {/* Footer: Like, Comments, Ask AI */}
+      {/* Footer: Vote, Comments, Ask AI */}
       <div className="flex items-center gap-3 mt-4 pt-3 border-t border-border">
-        <motion.button
-          whileTap={{ scale: 0.82 }}
-          onClick={handleLike}
-          className={`flex items-center gap-1.5 text-sm transition-colors ${
-            liked
-              ? "text-red-500"
-              : "text-muted-foreground hover:text-red-400"
-          }`}
-        >
-          <Heart
-            size={15}
-            weight={liked ? "fill" : "regular"}
-          />
-          <span>{likeCount}</span>
-        </motion.button>
+        <div className="flex items-center gap-1">
+          <motion.button
+            whileTap={{ scale: 0.82 }}
+            onClick={() => handleVote(1)}
+            className={`p-0.5 rounded transition-colors ${
+              currentVote === 1
+                ? "text-[var(--terracotta)]"
+                : "text-muted-foreground hover:text-[var(--terracotta)]"
+            }`}
+          >
+            <ArrowFatUp size={16} weight={currentVote === 1 ? "fill" : "regular"} />
+          </motion.button>
+          <span className={`text-sm font-medium tabular-nums min-w-[1.5ch] text-center ${
+            score > 0 ? "text-[var(--terracotta)]" : score < 0 ? "text-red-500" : "text-muted-foreground"
+          }`}>{score}</span>
+          <motion.button
+            whileTap={{ scale: 0.82 }}
+            onClick={() => handleVote(-1)}
+            className={`p-0.5 rounded transition-colors ${
+              currentVote === -1
+                ? "text-red-500"
+                : "text-muted-foreground hover:text-red-500"
+            }`}
+          >
+            <ArrowFatDown size={16} weight={currentVote === -1 ? "fill" : "regular"} />
+          </motion.button>
+        </div>
 
         <CommentSection
           noteId={note.id}

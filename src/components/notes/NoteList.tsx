@@ -18,7 +18,7 @@ interface Props {
   hasMore: boolean
   currentUserId?: string
   isAdmin?: boolean
-  likedNoteIds: number[]
+  userVotes: Record<number, number>
   subjects: string[]
   coursesDict: Record<string, number[]>
   onAskAI?: (note: NoteWithCounts) => void
@@ -30,7 +30,7 @@ export function NoteList({
   hasMore: initialHasMore,
   currentUserId,
   isAdmin,
-  likedNoteIds,
+  userVotes,
   subjects,
   coursesDict,
   onAskAI,
@@ -48,7 +48,6 @@ export function NoteList({
     setPage(1)
   }, [initialNotes, initialHasMore])
 
-  const likedSet = new Set(likedNoteIds)
 
   function loadMore() {
     const nextPage = page + 1
@@ -83,7 +82,7 @@ export function NoteList({
               note={note}
               currentUserId={currentUserId}
               isAdmin={isAdmin}
-              isLiked={likedSet.has(note.id)}
+              userVote={userVotes[note.id] ?? null}
               index={i}
               onEdit={setEditingNote}
               onAskAI={onAskAI}

@@ -59,7 +59,7 @@ export async function getFilteredNotes(
   if (sort_by === "oldest") orderBy = { id: "asc" }
   else if (sort_by === "title") orderBy = { title: "asc" }
   else if (sort_by === "author") orderBy = { author: "asc" }
-  else if (sort_by === "most_liked") orderBy = { likes: { _count: "desc" } }
+  else if (sort_by === "most_liked") orderBy = { score: "desc" }
   else if (sort_by === "most_commented") orderBy = { comments: { _count: "desc" } }
   else if (sort_by === "popular") {
     // Prisma doesn't support computed sort directly; fall back to recent
@@ -77,7 +77,7 @@ export async function getFilteredNotes(
       take: PAGE_SIZE,
       include: {
         attachments: true,
-        _count: { select: { likes: true, comments: true } },
+        _count: { select: { comments: true } },
       },
     }),
   ])
@@ -99,12 +99,12 @@ export async function getFilteredNotes(
   }
 }
 
-export async function getUserLikedNoteIds(userId: string): Promise<Set<number>> {
-  const likes = await prisma.like.findMany({
+export async function getUserVotes(userId: string): Promise<Map<number, number>> {
+  const votes = await prisma.vote.findMany({
     where: { user_id: userId },
-    select: { note_id: true },
+    select: { note_id: true, value: true },
   })
-  return new Set(likes.map((l) => l.note_id))
+  return new Map(votes.map((v) => [v.note_id, v.value]))
 }
 
 export async function getTagCloud(): Promise<Array<{ tag: string; count: number }>> {

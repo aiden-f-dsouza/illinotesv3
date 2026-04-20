@@ -34,7 +34,7 @@ interface Props {
   hasMore: boolean
   hasPosted: boolean
   currentUser: UserWithProfile | null
-  likedNoteIds: number[]
+  userVotes: Record<number, number>
   subjects: string[]
   coursesDict: Record<string, number[]>
   searchParams: Record<string, string>
@@ -48,7 +48,7 @@ export function NotesFeedClient({
   hasMore,
   hasPosted,
   currentUser,
-  likedNoteIds,
+  userVotes,
   subjects,
   coursesDict,
   searchParams: initialParams,
@@ -105,7 +105,7 @@ export function NotesFeedClient({
   const sortLabel: Record<string, string> = {
     recent: "Most Recent",
     oldest: "Oldest First",
-    most_liked: "Most Liked",
+    most_liked: "Top Rated",
     most_commented: "Most Commented",
     title: "Title A–Z",
   }
@@ -226,7 +226,7 @@ export function NotesFeedClient({
             <SelectContent>
               <SelectItem value="recent">Most Recent</SelectItem>
               <SelectItem value="oldest">Oldest First</SelectItem>
-              <SelectItem value="most_liked">Most Liked</SelectItem>
+              <SelectItem value="most_liked">Top Rated</SelectItem>
               <SelectItem value="most_commented">Most Commented</SelectItem>
               <SelectItem value="title">Title A–Z</SelectItem>
             </SelectContent>
@@ -277,7 +277,7 @@ export function NotesFeedClient({
           hasMore={hasMore}
           currentUserId={currentUser?.id}
           isAdmin={currentUser?.isAdmin}
-          likedNoteIds={likedNoteIds}
+          userVotes={userVotes}
           subjects={subjects}
           coursesDict={coursesDict}
           searchParams={initialParams}

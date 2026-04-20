@@ -6,12 +6,12 @@ export interface Note {
   class_code: string
   user_id: string
   tags: string | null
+  score: number
   created: string // ISO date string
   attachments?: Attachment[]
-  likes?: Like[]
+  votes?: Vote[]
   comments?: Comment[]
   _count?: {
-    likes: number
     comments: number
   }
 }
@@ -26,10 +26,11 @@ export interface Attachment {
   extracted_text?: string | null
 }
 
-export interface Like {
+export interface Vote {
   id: number
   note_id: number
   user_id: string
+  value: number
   created: string
 }
 
@@ -87,8 +88,8 @@ export interface PaginatedNotes {
 }
 
 export interface NoteWithCounts extends Note {
+  score: number
   _count: {
-    likes: number
     comments: number
   }
   attachments: Attachment[]
