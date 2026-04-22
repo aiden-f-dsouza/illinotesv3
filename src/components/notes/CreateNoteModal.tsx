@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useRef } from "react"
+import { useState, useTransition, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -23,9 +23,32 @@ export function CreateNoteModal({ open, onClose, subjects, coursesDict, onSucces
   const [selectedSubject, setSelectedSubject] = useState("")
   const [selectedNumber, setSelectedNumber] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const [isPending, startTransition] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
+
+  const ACCEPTED = new Set([".pdf",".png",".jpg",".jpeg",".gif",".doc",".docx",".txt",".ppt",".pptx"])
+
+  const acceptFile = useCallback((file: File) => {
+    const ext = "." + file.name.split(".").pop()?.toLowerCase()
+    if (!ACCEPTED.has(ext)) {
+      toast.error(`File type not supported`)
+      return
+    }
+    if (file.size > 32 * 1024 * 1024) {
+      toast.error("File exceeds 32 MB limit")
+      return
+    }
+    setSelectedFile(file)
+  }, [])
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) acceptFile(file)
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -121,7 +144,7 @@ export function CreateNoteModal({ open, onClose, subjects, coursesDict, onSucces
               type="file"
               className="hidden"
               accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.txt,.ppt,.pptx"
-              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) acceptFile(f) }}
             />
             {selectedFile ? (
               <div className="flex items-center gap-2 p-2.5 bg-accent/50 border border-border rounded-lg">
@@ -129,23 +152,30 @@ export function CreateNoteModal({ open, onClose, subjects, coursesDict, onSucces
                 <span className="text-sm truncate flex-1">{selectedFile.name}</span>
                 <button
                   type="button"
-                  onClick={() => setSelectedFile(null)}
+                  onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = "" }}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <X size={14} />
                 </button>
               </div>
             ) : (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
+              <div
                 onClick={() => fileInputRef.current?.click()}
-                className="gap-2"
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                className={`flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                  isDragging
+                    ? "border-[var(--terracotta)] bg-[var(--terracotta)]/5"
+                    : "border-border hover:border-[var(--terracotta)]/50 hover:bg-accent/30"
+                }`}
               >
-                <Paperclip size={14} />
-                Attach file
-              </Button>
+                <Paperclip size={20} className="text-muted-foreground" />
+                <p className="text-sm text-muted-foreground text-center">
+                  <span className="font-medium text-foreground">Click to browse</span> or drag and drop a file here
+                </p>
+                <p className="text-xs text-muted-foreground">PDF, DOC, PPT, images, TXT — up to 32 MB</p>
+              </div>
             )}
           </div>
 
