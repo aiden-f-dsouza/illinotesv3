@@ -33,7 +33,7 @@ export default function SignupPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/landing" className="inline-block">
-            <h1 className="font-serif text-3xl font-bold text-[var(--terracotta)]">IlliNotes</h1>
+            <h1 className="font-serif text-3xl font-bold text-[var(--terracotta)]">Illinotes</h1>
             <p className="text-muted-foreground text-sm mt-1">Join thousands of UIUC students</p>
           </Link>
         </div>

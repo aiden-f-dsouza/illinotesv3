@@ -1,7 +1,7 @@
 ---
 title: "Why We Built Illinotes: A Student's Perspective"
 slug: "why-we-built-illinotes"
-author: "IlliNotes Team"
+author: "Illinotes Team"
 date: "2026-01-05"
 category: "Story"
 featured_image: ""

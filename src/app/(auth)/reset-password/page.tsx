@@ -71,7 +71,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/landing" className="inline-block">
-            <h1 className="font-serif text-3xl font-bold text-[var(--terracotta)]">IlliNotes</h1>
+            <h1 className="font-serif text-3xl font-bold text-[var(--terracotta)]">Illinotes</h1>
           </Link>
         </div>
         <div className="bg-card border border-border rounded-xl p-8 shadow-[var(--shadow-md)]">

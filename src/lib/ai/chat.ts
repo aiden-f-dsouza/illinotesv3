@@ -3,7 +3,7 @@ import type { NoteWithCounts } from "@/types"
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-const SYSTEM_PROMPT_BASE = `You are an AI tutor for UIUC students using IlliNotes. You help students understand their class notes, explain concepts, and answer questions.
+const SYSTEM_PROMPT_BASE = `You are an AI tutor for UIUC students using Illinotes. You help students understand their class notes, explain concepts, and answer questions.
 
 Personality:
 - Warm, encouraging, and direct — like a sharp upperclassman who genuinely loves helping

@@ -18,7 +18,7 @@ const merriweather = Merriweather({
 })
 
 export const metadata: Metadata = {
-  title: { default: "IlliNotes", template: "%s | IlliNotes" },
+  title: { default: "Illinotes", template: "%s | Illinotes" },
   description: "Collaborative note-sharing for UIUC students",
   icons: {
     icon: [

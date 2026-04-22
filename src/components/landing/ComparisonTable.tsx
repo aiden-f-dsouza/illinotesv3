@@ -46,7 +46,7 @@ export function ComparisonTable() {
               </th>
             ))}
             <th className="text-center py-3 px-4 font-bold text-white bg-[var(--terracotta)] rounded-t-lg border-b border-[var(--terracotta)]">
-              IlliNotes
+              Illinotes
             </th>
           </tr>
         </thead>

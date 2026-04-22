@@ -17,7 +17,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/landing" className="inline-block">
-            <h1 className="font-serif text-3xl font-bold text-[var(--terracotta)]">IlliNotes</h1>
+            <h1 className="font-serif text-3xl font-bold text-[var(--terracotta)]">Illinotes</h1>
             <p className="text-muted-foreground text-sm mt-1">Share knowledge, ace your classes</p>
           </Link>
         </div>

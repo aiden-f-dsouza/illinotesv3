@@ -83,7 +83,7 @@ export default async function BlogPostPage({ params }: Props) {
         <header className="mb-8">
           <h1 className="font-serif text-4xl font-bold mb-4 leading-tight">{post.data.title}</h1>
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span>{post.data.author || "IlliNotes Team"}</span>
+            <span>{post.data.author || "Illinotes Team"}</span>
             {post.data.date && (
               <>
                 <span>·</span>

@@ -1,7 +1,7 @@
 ---
 title: "Introducing Illinotes: A New Way to Share Notes at UIUC"
 slug: "introducing-illinotes"
-author: "IlliNotes Team"
+author: "Illinotes Team"
 date: "2026-01-15"
 category: "Announcement"
 featured_image: ""

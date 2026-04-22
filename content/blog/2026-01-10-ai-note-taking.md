@@ -1,7 +1,7 @@
 ---
 title: "How AI is Transforming Note-Taking for Students"
 slug: "ai-note-taking"
-author: "IlliNotes Team"
+author: "Illinotes Team"
 date: "2026-01-10"
 category: "Tutorial"
 featured_image: ""

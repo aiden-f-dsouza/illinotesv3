@@ -31,7 +31,7 @@ function getBlogPosts(): Post[] {
       return {
         slug: data.slug || filename.replace(".md", ""),
         title: data.title || "Untitled",
-        author: data.author || "IlliNotes Team",
+        author: data.author || "Illinotes Team",
         date: data.date || "",
         excerpt: content.trim().slice(0, 200).replace(/[#*_]/g, "") + "…",
       }
@@ -45,7 +45,7 @@ export default function BlogPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <h1 className="font-serif text-3xl font-bold mb-2">Blog</h1>
-      <p className="text-muted-foreground mb-10">Updates and insights from the IlliNotes team.</p>
+      <p className="text-muted-foreground mb-10">Updates and insights from the Illinotes team.</p>
 
       {posts.length === 0 ? (
         <p className="text-muted-foreground text-center py-12">No posts yet. Check back soon!</p>
